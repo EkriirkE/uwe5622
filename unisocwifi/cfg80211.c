@@ -962,10 +962,18 @@ err_start:
 	return ret;
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0))
 static int sprdwl_cfg80211_change_beacon(struct wiphy *wiphy,
-					 struct net_device *ndev,
-					 struct cfg80211_beacon_data *beacon)
+	struct net_device *ndev,
+	struct cfg80211_ap_update *ap)
 {
+	struct cfg80211_beacon_data *beacon = &ap->beacon;
+#else
+static int sprdwl_cfg80211_change_beacon(struct wiphy *wiphy,
+	struct net_device *ndev,
+	struct cfg80211_beacon_data *beacon)
+{
+#endif
 	struct sprdwl_vif *vif = netdev_priv(ndev);
 
 	wl_ndev_log(L_DBG, ndev, "%s\n", __func__);
@@ -2861,12 +2869,21 @@ static void sprdwl_cfg80211_stop_p2p_device(struct wiphy *wiphy,
 		sprdwl_scan_done(vif, true);
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 5, 0))
+static int sprdwl_cfg80211_tdls_mgmt(struct wiphy *wiphy,
+					 struct net_device *ndev, const u8 *peer,
+					 int link_id, u8 action_code, u8 dialog_token,
+					 u16 status_code,  u32 peer_capability,
+					 bool initiator, const u8 *buf, size_t len)
+{
+#else
 static int sprdwl_cfg80211_tdls_mgmt(struct wiphy *wiphy,
 					 struct net_device *ndev, const u8 *peer,
 					 u8 action_code, u8 dialog_token,
 					 u16 status_code,  u32 peer_capability,
 					 bool initiator, const u8 *buf, size_t len)
 {
+#endif
 	struct sprdwl_vif *vif = netdev_priv(ndev);
 	struct sk_buff *tdls_skb;
 	struct sprdwl_cmd_tdls_mgmt *p;
@@ -3290,6 +3307,7 @@ static struct cfg80211_ops sprdwl_cfg80211_ops = {
 	.sched_scan_start = sprdwl_cfg80211_sched_scan_start,
 	.sched_scan_stop = sprdwl_cfg80211_sched_scan_stop,
 	.tdls_mgmt = sprdwl_cfg80211_tdls_mgmt,
+//  int (* tdls_mgmt) (struct wiphy *wiphy, struct net_device *dev,const u8 *peer, int link_id, u8 action_code,  u8 dialog_token,u16 status_code, u32 peer_capability,bool initiator, const u8 *buf, size_t len);
 	.tdls_oper = sprdwl_cfg80211_tdls_oper,
 	.start_p2p_device = sprdwl_cfg80211_start_p2p_device,
 	.stop_p2p_device = sprdwl_cfg80211_stop_p2p_device,

@@ -3869,8 +3869,13 @@ static int marlin_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int  marlin_remove(struct platform_device *pdev)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 10, 0))
+static void marlin_remove(struct platform_device *pdev)
 {
+#else
+static int marlin_remove(struct platform_device *pdev)
+{
+#endif
 #if (defined(CONFIG_BT_WAKE_HOST_EN) && defined(CONFIG_AW_BOARD))
 	marlin_unregistsr_bt_wake();
 #endif
@@ -3910,7 +3915,9 @@ static int  marlin_remove(struct platform_device *pdev)
 
 	WCN_INFO("marlin_remove ok!\n");
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 10, 0))
 	return 0;
+#endif
 }
 
 static void marlin_shutdown(struct platform_device *pdev)
